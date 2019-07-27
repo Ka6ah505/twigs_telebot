@@ -41,23 +41,23 @@ def case_place(ngram=[]):
   p = ''
   n = ''
   if 'PREP' in morph.parse(ngram[0])[0].tag:
-	  p = ngram[0]
-	  n = ngram[1]
-	  if p in ('к','по'):
-	    # dativ
-	    n = morph.parse(n)[0].inflect({'datv'}).word
-	  elif p in ('у','вокруг'):
-	    # roditel
-	    n = morph.parse(n)[0].inflect({'gent'}).word
-	  elif p in ('через'):
-	    # accs
-	    n = morph.parse(n)[0].inflect({'accs'}).word
-	  elif p in ('под','над','между','за'):
-	    # tvorit
-	    n = morph.parse(n)[0].inflect({'ablt'}).word
-	  elif p in ('в','на'):
-	    # predlochn
-	    n = morph.parse(n)[0].inflect({'loct'}).word
+    p = ngram[0]
+    n = ngram[1]
+    if p in ('к','по'):
+      # dativ
+      n = morph.parse(n)[0].inflect({'datv'}).word
+    elif p in ('у','вокруг'):
+      # roditel
+      n = morph.parse(n)[0].inflect({'gent'}).word
+    elif p in ('через'):
+      # accs
+      n = morph.parse(n)[0].inflect({'accs'}).word
+    elif p in ('под','над','между','за'):
+      # tvorit
+      n = morph.parse(n)[0].inflect({'ablt'}).word
+    elif p in ('в','на'):
+      # predlochn
+      n = morph.parse(n)[0].inflect({'loct'}).word
   else:
     n = morph.parse(ngram)[0].inflect({'gent'}).word
   return (p,n)
@@ -208,8 +208,10 @@ def callquery(query):
   data = query.data
   if data == 'like':
     set_like(query)
+    _bot.send_message(query.message.json.get('chat').get('id'), random_resource(), reply_markup=keybord)
   elif data == 'dislike':
     set_dislike(query)
+    _bot.send_message(query.message.json.get('chat').get('id'), random_resource(), reply_markup=keybord)
   else:
     print('else event')
 
@@ -228,22 +230,22 @@ def insert_to_base(_data=[]):
 # Функции оценки сгенерированной фразы
 def set_like(query):
   js = query.message.json
-  m_id = js['message_id']
-  f_name = js['chat']['first_name']
-  l_name = js['chat']['last_name']
-  uname = js['chat']['username']
-  date = str(datetime.fromtimestamp(js['date']) + timedelta(hours=3))
-  text = js['text']
+  m_id = js.get('message_id')
+  f_name = js.get('chat').get('first_name')
+  l_name = js.get('chat').get('last_name')
+  uname = js.get('chat').get('username')
+  date = str(datetime.fromtimestamp(js.get('date')) + timedelta(hours=3))
+  text = js.get('text')
   insert_to_base((m_id,f_name,l_name,uname,date,text,'like'))
 
 def set_dislike(query):
   js = query.message.json
-  m_id = js['message_id']
-  f_name = js['chat']['first_name']
-  l_name = js['chat']['last_name']
-  uname = js['chat']['username']
-  date = str(datetime.fromtimestamp(js['date']) + timedelta(hours=3))
-  text = js['text']
+  m_id = js.get('message_id')
+  f_name = js.get('chat').get('first_name')
+  l_name = js.get('chat').get('last_name')
+  uname = js.get('chat').get('username')
+  date = str(datetime.fromtimestamp(js.get('date')) + timedelta(hours=3))
+  text = js.get('text')
   insert_to_base((m_id,f_name,l_name,uname,date,text,'dislike'))
 
 # отклик на команду /start
