@@ -180,17 +180,71 @@ def random_resource():
   return join_s((random_phrase(), rand_phrase()))
 
 
+###---------body_bot---------
 import telebot
 from telebot import types
+import sqlite3 as lite
+from datetime import datetime, timedelta
 
-token = '825798287:AAFUPscDI_zOR92EOCO0v2bFfukKoZe6mUE'
-# Anrkhn_token = '662652606:AAF8wg4KCf3RHnbkc_hNpIK5ShHDJWjexrQ'
+token = ''
 _bot = telebot.TeleBot(token)
 
+# Кнопки под зоной печати сообщения
 markup_menu = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
 btn_example = types.KeyboardButton('пример')
-btn_example1 = types.KeyboardButton('работаешь?')
-markup_menu.add(btn_example,btn_example1)
+# btn_example1 = types.KeyboardButton('работаешь?')
+markup_menu.add(btn_example)
+
+# Кнопки для оценки фразы
+keybord = types.InlineKeyboardMarkup()
+keybord.row(
+    types.InlineKeyboardButton('Огонь', callback_data='like'),
+    types.InlineKeyboardButton('Фигня', callback_data='dislike')
+)
+
+# Обработка кнопок оценки
+@_bot.callback_query_handler(func=lambda call: True)
+def callquery(query):
+  data = query.data
+  if data == 'like':
+    set_like(query)
+  elif data == 'dislike':
+    set_dislike(query)
+  else:
+    print('else event')
+
+# Работа с базой
+# Вставка оцененной записи в таблицу
+def insert_to_base(_data=[]):
+  try:
+    connect = lite.connect('project_base.db')
+    cursor = connect.cursor()
+    cursor.execute("INSERT INTO log_phrases VALUES (?,?,?,?,?,?,?)", _data)
+    connect.commit()
+    connect.close()
+  except:
+    return False
+
+# Функции оценки сгенерированной фразы
+def set_like(query):
+  js = query.message.json
+  m_id = js['message_id']
+  f_name = js['chat']['first_name']
+  l_name = js['chat']['last_name']
+  uname = js['chat']['username']
+  date = str(datetime.fromtimestamp(js['date']) + timedelta(hours=3))
+  text = js['text']
+  insert_to_base((m_id,f_name,l_name,uname,date,text,'like'))
+
+def set_dislike(query):
+  js = query.message.json
+  m_id = js['message_id']
+  f_name = js['chat']['first_name']
+  l_name = js['chat']['last_name']
+  uname = js['chat']['username']
+  date = str(datetime.fromtimestamp(js['date']) + timedelta(hours=3))
+  text = js['text']
+  insert_to_base((m_id,f_name,l_name,uname,date,text,'dislike'))
 
 # отклик на команду /start
 @_bot.message_handler(commands=['start'])
@@ -207,7 +261,7 @@ def send_example(message):
 def send_example(message):
 	try:
 	  if message.text == 'пример':
-	    _bot.send_message(message.chat.id, random_resource(), reply_markup=markup_menu)
+	    _bot.send_message(message.chat.id, random_resource(), reply_markup=keybord)
 	  elif message.text == 'работаешь?':
 	    _bot.send_message(message.chat.id, 'Тружусь, тружусь...', reply_markup=markup_menu)
 	except:
