@@ -15,22 +15,12 @@ def detect_case(ngram):
   n = ''
   if 'INFN' in morph.parse(ngram[0])[0].tag:
     v = ngram[0]
-  if 'INFN' in morph.parse(ngram[0])[0].tag and 'NOUN' in morph.parse(ngram[1])[0].tag:
-    # detect gender
-    if 'femn' in morph.parse(ngram[1])[0].tag:
+    if 'NOUN' in morph.parse(ngram[1])[0].tag:
       n = morph.parse(ngram[1])[0].inflect({'accs'}).word
     else:
-#             n = morph.parse(ngram[1])[0].inflect({'nomn'}).word
-      n = morph.parse(ngram[1])[0].inflect({'accs'}).word
-  if 'PREP' in morph.parse(ngram[1])[0].tag and 'NOUN' in morph.parse(ngram[2])[0].tag:
-#         detect need case
-    p = ngram[1]
-    if ngram[1] in ('под','над','с','за','между'):
-      n = morph.parse(ngram[2])[0].inflect({'ablt'}).word
-    elif ngram[1] in ('о','об','во','в','на','при'):
-      n = morph.parse(ngram[2])[0].inflect({'loct'}).word
-    else:
-      n = morph.parse(ngram[2])[0].inflect({'datv'}).word
+      p, n = detect_case_place(ngram[1:])
+  else:
+    p, n = detect_case_place(ngram[1:])
   return (v,p,n)
 
 def join_s(l=[]):
@@ -147,7 +137,7 @@ def detect_case_place(ngram):
     return (ngram[0],morph.parse(ngram[1])[0].inflect({'loct'}).word) # predloch
   elif ngram[0] in ('после','из','до','от','около'):
     return (ngram[0],morph.parse(ngram[1])[0].inflect({'gent'}).word) # roditel
-  elif ngram[0] in ('над','под','c'):
+  elif ngram[0] in ('над','под','с','за'):
     return (ngram[0],morph.parse(ngram[1])[0].inflect({'ablt'}).word) # tvorit
   else:
     return (ngram[0],morph.parse(ngram[1])[0].inflect({'accs'}).word) # vinit
@@ -261,12 +251,12 @@ def send_example(message):
 # обработка контекстных кнопок
 @_bot.message_handler(func=lambda message: True)
 def send_example(message):
-	try:
-	  if message.text == 'пример':
-	    _bot.send_message(message.chat.id, random_resource(), reply_markup=keybord)
-	  elif message.text == 'работаешь?':
-	    _bot.send_message(message.chat.id, 'Тружусь, тружусь...', reply_markup=markup_menu)
-	except:
-		_bot.send_message(message.chat.id, 'Упс... попытайся ещё раз...', reply_markup=markup_menu)
+  try:
+    if message.text == 'пример':
+      _bot.send_message(message.chat.id, random_resource(), reply_markup=keybord)
+    elif message.text == 'работаешь?':
+      _bot.send_message(message.chat.id, 'Тружусь, тружусь...', reply_markup=markup_menu)
+  except:
+    _bot.send_message(message.chat.id, 'Упс... попытайся ещё раз...', reply_markup=markup_menu)
 
 _bot.polling()
