@@ -1,0 +1,4 @@
+pytelegrambotapi
+nltk
+pymongo
+pymorphy2
